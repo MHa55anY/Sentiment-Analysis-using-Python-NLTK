@@ -1,0 +1,64 @@
+import pandas as pd
+import nltk
+import nltk.corpus
+from nltk.tokenize import word_tokenize
+from nltk.sentiment import SentimentIntensityAnalyzer
+sia = SentimentIntensityAnalyzer()
+df = pd.read_csv('reviews.csv')
+pd.set_option('display.max_rows', 7000)
+pd.set_option('display.max_columns', 4)
+
+#Drop na NaN values
+df = df.dropna()
+df.reset_index(drop=True)
+review_list = list(df['Reviews'])
+#Text Cleaning - Removing stopwords, Lemmatization, Removing unnecessary POS tags
+import re
+from nltk.corpus import stopwords
+from nltk.stem.porter import PorterStemmer
+from nltk.stem.wordnet import WordNetLemmatizer
+lem = WordNetLemmatizer()
+corpus = []
+for i in range(0, len(review_list)):
+    review = re.sub('[^a-zA-Z]', ' ', review_list[i])
+    review = review.lower()
+    review = word_tokenize(review)
+    ps = PorterStemmer()
+    review = [lem.lemmatize(word) for word in review if not word in set(stopwords.words('english'))]
+    tags = nltk.pos_tag(review)
+    adjective = [word for word,pos in tags if (pos == 'JJ' or pos=='JJR' or pos=='JJS' or pos=='RB' or pos=='RBR' or pos=='RBS' or pos=='VBG' or pos=='VBZ' or pos=="VBD" or pos == 'VBP' or pos == "VB")]
+    review = ' '.join(adjective)
+    corpus.append(review)
+
+#Analyzing sentiments using VADER
+
+#positive sentiment: compound score >= 0.05
+#neutral sentiment: (compound score > -0.05) and (compound score < 0.05)
+#negative sentiment: compound score <= -0.05
+
+from nltk.sentiment import SentimentIntensityAnalyzer
+sia = SentimentIntensityAnalyzer()
+
+sentiment = []
+overall_sentiment = []
+pos_count = 0
+neg_count = 0
+neu_count = 0
+
+for sent in corpus:
+    x = sia.polarity_scores(sent)
+    sentiment.append(x)
+    if x.get('compound') >=0.05:
+        overall_sentiment.append('Positive')
+        pos_count+=1
+    elif (-0.05 < x.get('compound') < 0.05):
+        overall_sentiment.append('Neutral')
+        neu_count+=1
+    elif (x.get('compound') <= -0.05):
+        overall_sentiment.append('Negative')
+        neg_count+=1
+
+
+    
+df["Sentiment"] = sentiment
+df["Overall Sentiment"] = overall_sentiment
