@@ -31,34 +31,14 @@ for i in range(0, len(review_list)):
     corpus.append(review)
 
 #Analyzing sentiments using VADER
-
-#positive sentiment: compound score >= 0.05
-#neutral sentiment: (compound score > -0.05) and (compound score < 0.05)
-#negative sentiment: compound score <= -0.05
-
 from nltk.sentiment import SentimentIntensityAnalyzer
 sia = SentimentIntensityAnalyzer()
 
 sentiment = []
-overall_sentiment = []
-pos_count = 0
-neg_count = 0
-neu_count = 0
-
 for sent in corpus:
-    x = sia.polarity_scores(sent)
-    sentiment.append(x)
-    if x.get('compound') >=0.05:
-        overall_sentiment.append('Positive')
-        pos_count+=1
-    elif (-0.05 < x.get('compound') < 0.05):
-        overall_sentiment.append('Neutral')
-        neu_count+=1
-    elif (x.get('compound') <= -0.05):
-        overall_sentiment.append('Negative')
-        neg_count+=1
+    sentiment.append(sia.polarity_scores(sent))
 
+#No. of pos, neu and neg reviews
 
     
 df["Sentiment"] = sentiment
-df["Overall Sentiment"] = overall_sentiment
